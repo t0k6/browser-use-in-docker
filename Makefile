@@ -30,6 +30,7 @@ help:
 	@echo "  logs      - Show container logs"
 	@echo "  stop      - Stop the running container"
 	@echo "  clean     - Remove the Docker image"
+	@echo "  ls        - List images, containers, and processes"
 
 build:
 	docker build --shm-size $(SHM_SIZE) -t $(REPO):$(TAG) .
@@ -93,3 +94,9 @@ clean:
 	fi
 	@echo "Pruning unused images..."
 	docker image prune -f
+
+# List images, containers, and processes
+ls:
+	docker image ls ubuntu-chrome-browser-use:latest \
+	&& docker container ls -f name=ubuntu-chrome-browser-use \
+	&& docker ps -f name=ubuntu-chrome-browser-use
