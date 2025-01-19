@@ -4,13 +4,27 @@ FROM dorowu/ubuntu-desktop-lxde-vnc:latest
 RUN apt-get install -y wget && \
     wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
 
-# Set timezone to JST
+# Install tzdata for timezone support
 RUN apt-get update && apt-get install -y tzdata && \
-    ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
-    echo "Asia/Tokyo" > /etc/timezone && \
-    dpkg-reconfigure -f noninteractive tzdata && \
     rm -rf /var/lib/apt/lists/*
-ENV TZ=Asia/Tokyo
+
+# Create script for timezone setup
+COPY <<'EOF' /usr/local/bin/setup-timezone.sh
+#!/bin/bash
+if [ ! -z "$TZ" ]; then
+    ln -sf /usr/share/zoneinfo/$TZ /etc/localtime
+    echo "$TZ" > /etc/timezone
+    dpkg-reconfigure -f noninteractive tzdata
+fi
+EOF
+RUN chmod +x /usr/local/bin/setup-timezone.sh
+
+# Add timezone setup to startup
+COPY <<'EOF' /etc/cont-init.d/99-timezone
+#!/usr/bin/with-contenv bash
+/usr/local/bin/setup-timezone.sh
+EOF
+RUN chmod +x /etc/cont-init.d/99-timezone
 
 # Update google-chrome
 RUN apt install -y gpg-agent \

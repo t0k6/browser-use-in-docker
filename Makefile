@@ -7,6 +7,9 @@ WORKSPACE ?= /workspace
 SHM_SIZE ?= 512m
 VNC_RESOLUTION ?= 1920x1080
 
+# Set TZ option only if TZ is defined
+TZ_OPT = $(if $(TZ),-e TZ=$(TZ),)
+
 # Common docker run options
 DOCKER_COMMON_OPTS = --privileged \
 	-p $(VNC_PORT):$(HTTP_PORT) \
@@ -15,6 +18,7 @@ DOCKER_COMMON_OPTS = --privileged \
 	-e RELATIVE_URL_ROOT=approot \
 	-e VNC_RESOLUTION=$(VNC_RESOLUTION) \
 	-e VNC_PASSWORD=$(VNC_PASSWORD) \
+	$(TZ_OPT) \
 	--device /dev/snd \
 	--shm-size=$(SHM_SIZE) \
 	$(REPO):$(TAG)
@@ -24,13 +28,22 @@ DOCKER_COMMON_OPTS = --privileged \
 help:
 	@echo "Available targets:"
 	@echo "  build     - Build the Docker image"
-	@echo "  run       - Run the container (VNC_PASSWORD=your_password make run)"
+	@echo "  run       - Run the container"
+	@echo "             Usage: [VNC_PASSWORD=your_password] [TZ=your_timezone] make run"
+	@echo "             Example: TZ=Asia/Tokyo VNC_PASSWORD=secret make run"
 	@echo "  run-test  - Run the container in test mode (foreground, auto-remove)"
+	@echo "             Usage: Same as 'run' target"
 	@echo "  shell     - Open a shell in the running container"
 	@echo "  logs      - Show container logs"
 	@echo "  stop      - Stop the running container"
 	@echo "  clean     - Remove the Docker image"
 	@echo "  ls        - List images, containers, and processes"
+	@echo ""
+	@echo "Environment variables:"
+	@echo "  VNC_PASSWORD   - Password for VNC access"
+	@echo "                   If not set, you will be prompted to enter it"
+	@echo "  TZ             - Optional. Container timezone (e.g., Asia/Tokyo)"
+	@echo "                   If not set, system default timezone will be used"
 
 build:
 	docker build --shm-size $(SHM_SIZE) -t $(REPO):$(TAG) .
