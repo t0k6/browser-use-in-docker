@@ -60,7 +60,7 @@ run-test:
 _run-test:
 	@echo "Running container in test mode (Ctrl+C to stop)"
 	@echo "VNC will be available at localhost:$(VNC_PORT)"
-	docker run --rm $(DOCKER_COMMON_OPTS)
+	docker run --name ubuntu-chrome-browser-use-test --rm $(DOCKER_COMMON_OPTS)
 
 # Connect inside the running container for debugging
 shell:
@@ -72,7 +72,7 @@ logs:
 
 # Stop the running container
 stop:
-	@if docker ps -q -f name=ubuntu-chrome-browser-use >/dev/null; then \
+	@if [ -n "$(shell docker ps -q -f name=ubuntu-chrome-browser-use)" ]; then \
 		echo "Stopping container..." && \
 		docker stop ubuntu-chrome-browser-use; \
 	else \
@@ -81,7 +81,7 @@ stop:
 
 # Remove the container and image
 clean:
-	@if docker ps -q -f name=ubuntu-chrome-browser-use >/dev/null; then \
+	@if [ -n "$(shell docker ps -q -f name=ubuntu-chrome-browser-use)" ]; then \
 		echo "Stopping container..." && \
 		docker stop ubuntu-chrome-browser-use; \
 	fi
